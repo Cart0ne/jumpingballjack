@@ -136,13 +136,12 @@ GameScene
 
 ## Bug Noti
 
-- [ ] **Lag sporadici su iOS (iPhone 16)** — Stutter/frame drop durante il gameplay su build release. Possibili cause:
-  - `FindFirstObjectByType` / `FindObjectsByType` usati a runtime in vari script
-  - `SoundManager.UpdateEffectsSound()` cerca tutti gli AudioSource nella scena ad ogni toggle
-  - `PlatformSpawner.CachePrefabTopOffsets()` istanzia/distrugge tutti i prefab in Awake
-  - `DynamicGI.UpdateEnvironment()` chiamato ad ogni cambio skybox
-  - Allocazioni GC in `OnCollisionEnter` (GetComponent, FindGameObjectsWithTag)
-  - Shader compilation al primo utilizzo di materiali/effetti
+- [x] **Lag sporadici su iOS (iPhone 16)** — RISOLTO. Cause trovate e fixate:
+  - Audio clip con Compressed In Memory + Vorbis causavano decompressione runtime → cambiati a Decompress On Load + ADPCM
+  - `SoundManager.UpdateEffectsSound()` usava `FindObjectsByType<AudioSource>` pesante → rimosso, ogni script controlla `SoundManager.soundEnabled` prima di suonare
+  - Prima inizializzazione di prefab Platform complessi (Animator, ParticleSystem) → ShaderPreloader ora aspetta piu frame per prefab complessi (5 vs 2)
+- [x] **Bug mute non persistente** — RISOLTO. Suoni riapparivano dopo restart partita perche `UpdateEffectsSound` non copriva AudioSource creati dopo il reload scena. Rimosso approccio mute globale, ogni script ora controlla il flag statico.
+- [x] **Warning "Setting scale failed"** — RISOLTO. `PlatformExitAnimation` scalava a `Vector3.zero` → cambiato a `Vector3.one * 0.001f`
 
 ---
 

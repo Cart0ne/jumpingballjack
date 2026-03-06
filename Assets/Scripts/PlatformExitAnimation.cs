@@ -68,7 +68,7 @@ public class PlatformExitAnimation : MonoBehaviour
                         elapsed += Time.deltaTime;
                         float t = Mathf.SmoothStep(0f, 1f, elapsed / rocketDuration);
                         transform.position = Vector3.Lerp(initialPosition, targetPosition, t);
-                        transform.localScale = Vector3.Lerp(initialScale, Vector3.zero, t);
+                        transform.localScale = Vector3.Lerp(initialScale, Vector3.one * 0.001f, t);
                         yield return null;
                 }
 
@@ -76,7 +76,7 @@ public class PlatformExitAnimation : MonoBehaviour
 
 #endif
 
-                transform.localScale = Vector3.zero;
+                transform.localScale = Vector3.one * 0.001f;
                 //Destroy(gameObject);
                 PlatformAudioFader audioFader = GetComponent<PlatformAudioFader>();
                 if (audioFader != null)

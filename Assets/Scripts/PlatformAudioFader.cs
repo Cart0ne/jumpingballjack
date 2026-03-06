@@ -16,11 +16,14 @@ public class PlatformAudioFader : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         if (audioSource != null && audioSource.clip != null)
         {
-            originalVolume = audioSource.volume; // 🔥 Usa il volume impostato da Inspector
+            originalVolume = audioSource.volume;
             audioSource.volume = 0f;
             audioSource.loop = true;
-            audioSource.Play();
-            fadeCoroutine = StartCoroutine(FadeAudio(0f, originalVolume, fadeInDuration));
+            if (SoundManager.soundEnabled)
+            {
+                audioSource.Play();
+                fadeCoroutine = StartCoroutine(FadeAudio(0f, originalVolume, fadeInDuration));
+            }
         }
     }
 

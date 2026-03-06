@@ -65,12 +65,7 @@ public class ScoreManager : MonoBehaviour
 
     private void PlayScoreSound(int points)
     {
-        if (scoreAudioSource == null) {
-             // Debug.LogWarning("ScoreManager: AudioSource per i suoni di punteggio non assegnato.", this);
-             return; // Esce se manca l'AudioSource
-        }
-        // Assumendo che SoundManager.soundEnabled esista e sia accessibile staticamente
-        // if (!SoundManager.soundEnabled) return; // Commentato se non usi un SoundManager globale
+        if (scoreAudioSource == null || !SoundManager.soundEnabled) return;
 
         AudioClip clipToPlay = null;
 

@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class SoundManager : MonoBehaviour
 {
@@ -20,15 +19,12 @@ public class SoundManager : MonoBehaviour
 
             soundEnabled = PlayerPrefs.GetInt(SoundEnabledKey, 1) == 1;
             musicEnabled = PlayerPrefs.GetInt(MusicEnabledKey, 1) == 1;
-            UpdateEffectsSound();
             UpdateBackgroundMusic();
 
             if (backgroundMusicSource != null && musicEnabled && !backgroundMusicSource.isPlaying)
             {
                 backgroundMusicSource.Play();
             }
-
-            SceneManager.sceneLoaded += OnSceneLoaded;
         }
         else if (instance != this)
         {
@@ -37,39 +33,11 @@ public class SoundManager : MonoBehaviour
         }
     }
 
-    void OnDestroy()
-    {
-        if (instance == this)
-        {
-            SceneManager.sceneLoaded -= OnSceneLoaded;
-        }
-    }
-
-    private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        UpdateEffectsSound();
-    }
-
     public static void EnableSoundEffects(bool enable)
     {
         soundEnabled = enable;
-        UpdateEffectsSound();
         PlayerPrefs.SetInt(SoundEnabledKey, soundEnabled ? 1 : 0);
         PlayerPrefs.Save();
-        // DEBUG RIMOSSO: Debug.Log("Effetti sonori " + (soundEnabled ? "abilitati" : "disabilitati"));
-    }
-
-    private static void UpdateEffectsSound()
-    {
-        if (instance == null) return;
-
-        AudioSource[] allAudioSources = FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
-        foreach (AudioSource audioSource in allAudioSources)
-        {
-            if (audioSource == instance.backgroundMusicSource)
-                continue;
-            audioSource.mute = !soundEnabled;
-        }
     }
 
     public void EnableBackgroundMusic(bool enable) // Metodo di istanza
