@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SoundManager : MonoBehaviour
 {
@@ -20,18 +21,33 @@ public class SoundManager : MonoBehaviour
             soundEnabled = PlayerPrefs.GetInt(SoundEnabledKey, 1) == 1;
             musicEnabled = PlayerPrefs.GetInt(MusicEnabledKey, 1) == 1;
             UpdateEffectsSound();
-            UpdateBackgroundMusic(); // Questo è un metodo di istanza, chiamato su 'this' (instance)
+            UpdateBackgroundMusic();
 
             if (backgroundMusicSource != null && musicEnabled && !backgroundMusicSource.isPlaying)
             {
                 backgroundMusicSource.Play();
             }
+
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
         else if (instance != this)
         {
             Destroy(gameObject);
             return;
         }
+    }
+
+    void OnDestroy()
+    {
+        if (instance == this)
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+    }
+
+    private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        UpdateEffectsSound();
     }
 
     public static void EnableSoundEffects(bool enable)

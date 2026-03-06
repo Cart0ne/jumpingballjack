@@ -134,17 +134,31 @@ GameScene
 
 ---
 
+## Bug Noti
+
+- [ ] **Lag sporadici su iOS (iPhone 16)** — Stutter/frame drop durante il gameplay su build release. Possibili cause:
+  - `FindFirstObjectByType` / `FindObjectsByType` usati a runtime in vari script
+  - `SoundManager.UpdateEffectsSound()` cerca tutti gli AudioSource nella scena ad ogni toggle
+  - `PlatformSpawner.CachePrefabTopOffsets()` istanzia/distrugge tutti i prefab in Awake
+  - `DynamicGI.UpdateEnvironment()` chiamato ad ogni cambio skybox
+  - Allocazioni GC in `OnCollisionEnter` (GetComponent, FindGameObjectsWithTag)
+  - Shader compilation al primo utilizzo di materiali/effetti
+
+---
+
 ## TODO
 
 ### Gameplay & Bilanciamento
 - [ ] Ribilanciare la difficolta (DifficultyManager)
 - [ ] Rivedere il magnetismo
 - [ ] Verificare feeling del salto
+- [ ] **Velocizzare la palla in volo** — Stessa traiettoria parabolica, percorsa piu velocemente. In `BallController.PerformJump()` scalare horizontalSpeed e verticalVelocity con un unico fattore + ridurre gravita proporzionalmente per mantenere la parabola identica. Tocca anche `estimatedFlightTime` e il magnetismo.
 
 ### UI/UX
 - [ ] Migliorare schermata di start
 - [ ] Rivedere punteggio in gioco
 - [ ] Migliorare schermata Game Over
+- [ ] **Cambiare splash screen Unity** — Personalizzare o sostituire lo splash screen iniziale (nota: con licenza Personal il logo Unity e obbligatorio, con Plus/Pro si puo rimuovere)
 
 ### Leaderboard
 - [ ] Implementare Game Center (classifica globale + amici)
