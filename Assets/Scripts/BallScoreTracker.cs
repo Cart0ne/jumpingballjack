@@ -85,6 +85,7 @@ public class BallScoreTracker : MonoBehaviour
                     if (distanceToCenter <= centerHitActivationDistance)
                     {
                         SpawnCenterHitEffect(transform.position, multiplierHit); // Passa il flag per la colorazione
+                        HapticFeedback.TriggerMedium();
                     }
                 }
                 // Se pointsToAdd è 0, non fare nulla (es. colpo non al centro su un tipo di piattaforma senza punteggio base)

@@ -38,7 +38,7 @@ public class PlatformCompression : MonoBehaviour
     {
         if (visualTransform == null)
         {
-#if UNITY_EDITOR || DEVELOPMENT_BUILDtrue
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
                 Debug.LogError("PlatformCompression: 'visualTransform' non assegnato nell'Inspector!", this.gameObject);
 #endif
             enabled = false;

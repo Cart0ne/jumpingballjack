@@ -182,6 +182,40 @@ GameScene
 
 ---
 
+## Bug da Fixare
+
+- [x] **Cache Camera.main in FloatingScoreController** — RISOLTO. `Camera.main` chiamato ogni frame in `Update` (internamente fa `FindGameObjectWithTag`). Cachato in `Start()` per performance.
+- [x] **Precedenza operatori BallController** — RISOLTO. Aggiunte parentesi esplicite: `(Platform || Planet) && !InitialPlatform`. Il bug non si manifestava perché InitialPlatform ha tag unico, ma ora la logica è chiara.
+- [x] **Direttiva preprocessore rotta PlatformCompression** — RISOLTO. Typo `DEVELOPMENT_BUILDtrue` corretto in `DEVELOPMENT_BUILD`.
+
+---
+
+## Ottimizzazioni Performance (iOS)
+
+- [ ] **Object Pooling piattaforme** — Ogni piattaforma viene `Instantiate`/`Destroy`, causando GC spikes su iOS. Un pool di ~5-6 oggetti riciclati eliminerebbe il problema. **DA TESTARE PRIMA**: fare build con magnetismo al massimo e difficoltà a zero, giocare 50-100 piattaforme e verificare se compaiono micro-stutter periodici. Se no, non serve. **Valori originali da ripristinare dopo test**: `platformIncreaseFactor=0.1`, `initialAttractionRadius=2`, `initialMagneticForceMultiplier=2`.
+- [x] **Cache Camera.main** — RISOLTO (vedi Bug da Fixare).
+- [ ] **FindFirstObjectByType sparsi** — `StartGameActions` ne fa molti. Non critico (una volta sola), ma fragile se l'ordine di inizializzazione cambia. **BASSA PRIORITA**: funziona, nessun impatto performance. Intervenire solo se compaiono null misteriosi all'avvio.
+
+---
+
+## Miglioramenti Architettura e Codice
+
+- [ ] **BallController è un god object** — ~15 flag booleani di stato (`isGrounded`, `gameStarted`, `gameEnded`, `hasBounced`, `isBouncing`, `isBounceLanding`, `hasExploded`...). Una state machine semplificherebbe e renderebbe il codice meno fragile.
+- [ ] **Accoppiamento stretto** — BallController dipende da 9+ script. Un sistema ad eventi (`OnBallLanded`, `OnGameOver`, `OnJump`) separerebbe le responsabilità.
+- [ ] **Pulizia codice morto** — `#pragma warning disable CS0414` con variabili mai usate in BallController, blocchi `#if UNITY_EDITOR` vuoti ovunque, codice commentato da rimuovere.
+- [ ] **Magic numbers** — `1.2f` moltiplicatore in BallController, `0.33f`/`0.66f` probabilità in PlatformSpawner. Meglio come costanti con nome o campi Inspector.
+
+---
+
+## Suggerimenti Gameplay
+
+- [x] **Feedback aptico (Haptics)** — IMPLEMENTATO. Plugin nativo iOS (`HapticFeedback.mm`) + wrapper C# (`HapticFeedback.cs`). Light al landing (BallController), Medium al centro perfetto (BallScoreTracker), Heavy al game over (GameOverManager). Rispetta `SoundManager.soundEnabled`. Non fa nulla nell'editor, solo su iPhone.
+- [ ] **Trail/particelle in volo** — Aggiungere Trail Renderer sulla palla in Unity Inspector (nessun codice necessario). Regolare Time, Width, materiale. Se serve comportamento dinamico (colore/lunghezza legati a velocità/difficoltà), aggiungere codice.
+- [ ] **Difficulty curve non lineare** — `useCurve` e `difficultyCurve` esistono già nel DifficultyManager. Basta attivare `useCurve` nell'Inspector e disegnare una curva ease-out. Nessun codice necessario.
+- [ ] **Combo/streak visivo (miglioramenti)** — Il sistema base esiste già: ring effect al centro, ring colorato al 5° centro consecutivo Planet con x3 punti. Miglioramenti possibili: screen shake al x3, testo floating più grande/colorato per il moltiplicatore, suono speciale per il x3.
+
+---
+
 ## Strategia di Lancio e Monetizzazione
 
 ### Modello di Business
@@ -290,3 +324,39 @@ Social.ReportScore(punteggio, "tua_leaderboard_id", success => {});
 | Con buon ASO (mese 2-3) | 20-50 |
 | Spike Reddit/ProductHunt | 50-100 |
 | Regime organico | 20-40 |
+
+---
+
+## Strategia Social Media con AI
+
+### TikTok
+- Creare account dedicato al gioco (no volto necessario)
+- Postare video gameplay di 15-30 secondi
+- Workflow consigliato:
+  1. Registra 2 minuti di gameplay su iPhone
+  2. CapCut (AI integrata) monta e ottimizza il video
+  3. Claude suggerisce didascalie e hashtag ottimizzati
+  4. Posta nei momenti di maggior traffico (18:00-22:00)
+
+### Reddit
+- Subreddits target:
+  - r/indiegaming
+  - r/gamedev
+  - r/iosgaming
+  - r/Unity3D (per la storia di sviluppo)
+- Usare Claude per scrivere post ottimizzati per ogni subreddit
+- Condividere la **storia di sviluppo** (molto apprezzata dalla community indie)
+- Postare nei giorni di maggior traffico (martedì-giovedì)
+
+### ⚠️ Cosa evitare assolutamente
+- Bot che postano automaticamente
+- Account fake che commentano/votano
+- Spam automatizzato
+- Rischio: ban account + danno reputazione
+
+### Tool AI consigliati
+| Tool | Uso | Costo |
+|------|-----|-------|
+| CapCut | Montaggio video TikTok | Gratuito |
+| Claude | Post Reddit, didascalie, hashtag | Già incluso nel tuo piano |
+| ChatGPT | Alternativa per testi | Gratuito |

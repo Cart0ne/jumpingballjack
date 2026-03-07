@@ -3091,7 +3091,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c54c6f748a5c4177947f625fb2243d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  difficultyIncreaseRate: 0.02
+  difficultyIncreaseRate: 0
   platformIncreaseFactor: 0.1
   maxDifficulty: 5
   platformCount: 10
@@ -3120,6 +3120,8 @@ MonoBehaviour:
   ultimateCorrectionKp: 2
   initialCorrectionKd: 2
   ultimateCorrectionKd: 1
+  initialFlightSpeedMultiplier: 1.2
+  ultimateFlightSpeedMultiplier: 3
   verticalMovementProbability: 0.8
   minVerticalMoveSpeed: 1
   maxVerticalMoveSpeed: 2
@@ -7377,7 +7379,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4935115521195256610, guid: 73bff023b776d4d3097ce8df2208df79, type: 3}
       propertyPath: maxJumpHeight
-      value: 2.2
+      value: 2.5
       objectReference: {fileID: 0}
     - target: {fileID: 4935115521195256610, guid: 73bff023b776d4d3097ce8df2208df79, type: 3}
       propertyPath: inflationSound
@@ -7402,6 +7404,10 @@ PrefabInstance:
     - target: {fileID: 4935115521195256610, guid: 73bff023b776d4d3097ce8df2208df79, type: 3}
       propertyPath: alignmentStartDelay
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4935115521195256610, guid: 73bff023b776d4d3097ce8df2208df79, type: 3}
+      propertyPath: flightSpeedMultiplier
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4935115521195256610, guid: 73bff023b776d4d3097ce8df2208df79, type: 3}
       propertyPath: audioInflationDuration

@@ -7,6 +7,8 @@ public class FloatingScoreController : MonoBehaviour
     public float floatSpeed = 1f; // Velocità con cui sale
     public float duration = 1.5f; // Tempo prima di autodistruggersi
 
+    private Transform mainCameraTransform;
+
     public void Initialize(int score, Vector3 spawnPosition)
     {
         scoreText.text = $"+{score}";   
@@ -19,10 +21,15 @@ public class FloatingScoreController : MonoBehaviour
         Destroy(gameObject, duration); // Distrugge l'oggetto dopo un po'
     }
 
+    void Start()
+    {
+        mainCameraTransform = Camera.main.transform;
+    }
+
     void Update()
     {
         // Mantiene il testo rivolto verso la telecamera principale
-        transform.LookAt(Camera.main.transform);
+        transform.LookAt(mainCameraTransform);
         transform.Rotate(0, 180, 0); // Corregge l'inversione del testo
 
         // Movimento verso l'alto

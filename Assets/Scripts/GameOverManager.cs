@@ -105,6 +105,8 @@ public class GameOverManager : MonoBehaviour
 #endif
             }
 
+            HapticFeedback.TriggerHeavy();
+
             StartCoroutine(HandleGameOverSequence());
         }
         else

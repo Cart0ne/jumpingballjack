@@ -493,6 +493,8 @@ public class BallController : MonoBehaviour
                 audioSource.PlayOneShot(bounceSound, bounceSoundVolume);
             }
 
+            HapticFeedback.TriggerLight();
+
             // Bounce solo su atterraggio orizzontale
             if (!hasBounced && ballIsActive)
             {
@@ -528,7 +530,7 @@ public class BallController : MonoBehaviour
                         Debug.LogWarning("[BallController] ballRotationController è NULL in OnCollisionEnter");
                 }
 
-                if (collision.gameObject.CompareTag("Platform") || collision.gameObject.CompareTag("Planet") && !collision.gameObject.CompareTag("InitialPlatform"))
+                if ((collision.gameObject.CompareTag("Platform") || collision.gameObject.CompareTag("Planet")) && !collision.gameObject.CompareTag("InitialPlatform"))
                 {
                     if (difficultyManager != null && !difficultyManager.firstJumpOccurred)
                     {
