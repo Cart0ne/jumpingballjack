@@ -142,6 +142,7 @@ GameScene
   - Prima inizializzazione di prefab Platform complessi (Animator, ParticleSystem) → ShaderPreloader ora aspetta piu frame per prefab complessi (5 vs 2)
 - [x] **Bug mute non persistente** — RISOLTO. Suoni riapparivano dopo restart partita perche `UpdateEffectsSound` non copriva AudioSource creati dopo il reload scena. Rimosso approccio mute globale, ogni script ora controlla il flag statico.
 - [x] **Warning "Setting scale failed"** — RISOLTO. `PlatformExitAnimation` scalava a `Vector3.zero` → cambiato a `Vector3.one * 0.001f`
+- [x] **Bounce innaturale su spigoli/lati** — RISOLTO. `OnCollisionEnter` in BallController ora controlla la normale di collisione (angolo < 45°). Impatti laterali vengono gestiti dalla fisica naturale senza freeze/bounce forzato.
 
 ---
 
@@ -151,13 +152,14 @@ GameScene
 - [ ] Ribilanciare la difficolta (DifficultyManager)
 - [ ] Rivedere il magnetismo
 - [ ] Verificare feeling del salto
-- [ ] **Velocizzare la palla in volo** — Stessa traiettoria parabolica, percorsa piu velocemente. In `BallController.PerformJump()` scalare horizontalSpeed e verticalVelocity con un unico fattore + ridurre gravita proporzionalmente per mantenere la parabola identica. Tocca anche `estimatedFlightTime` e il magnetismo.
+- [x] **Velocizzare la palla in volo** — IMPLEMENTATO. `flightSpeedMultiplier` in BallController scala velocita, BallGravityController scala gravita di S^2 per mantenere la stessa traiettoria. Integrato nel DifficultyManager con `initialFlightSpeedMultiplier` e `ultimateFlightSpeedMultiplier` per progressione automatica.
 
 ### UI/UX
 - [ ] Migliorare schermata di start
 - [ ] Rivedere punteggio in gioco
 - [ ] Migliorare schermata Game Over
 - [ ] **Cambiare splash screen Unity** — Personalizzare o sostituire lo splash screen iniziale (nota: con licenza Personal il logo Unity e obbligatorio, con Plus/Pro si puo rimuovere)
+- [ ] Verificare transizioni tra schermate (Start → Game, Game → GameOver, GameOver → Start/Restart, Settings apri/chiudi)
 
 ### Leaderboard
 - [ ] Implementare Game Center (classifica globale + amici)
@@ -170,9 +172,121 @@ GameScene
 ### DevOps
 - [x] Setup GitHub con .gitignore Unity
 - [ ] Workflow commit ad ogni funzionalita stabile
+- [ ] Gestione versioni Alpha / Beta / Release (versionamento build, branching strategy)
 
 ### Store & Launch
 - [ ] Icona app
 - [ ] Screenshot App Store
 - [ ] Descrizione e keywords
 - [ ] TestFlight per beta test
+
+---
+
+## Strategia di Lancio e Monetizzazione
+
+### Modello di Business
+- App **gratuita** sullo Store
+- **Interstitial Ad** al Game Over (automatica, si chiude dopo 5 secondi)
+- **Rewarded Ad** al Game Over ("Guarda un video e continua dalla stessa posizione")
+- **In-app purchase** "Rimuovi pubblicità" (prezzo da definire, indicativo 1.99€)
+- Apple trattiene il 30% su ogni acquisto in-app
+
+### Tipi di Pubblicità
+| Tipo | Quando | Note |
+|------|--------|------|
+| Interstitial | Game Over | Schermata a pieno schermo, automatica |
+| Rewarded | Game Over | Volontaria, rende 5-10x più degli interstitial |
+| Banner | — | Sconsigliati, rendono poco e peggiorano UX |
+
+### Testing delle Ads
+- **Unity Editor** → non funzionano, solo codice
+- **Build su telefono** → Test Ads di LevelPlay (già integrato)
+- **TestFlight** → Test Ads, simula produzione
+- **App Store** → Ads reali, guadagni reali
+
+### Proiezione Entrate (Scenario Base)
+Ipotesi: 100 download/giorno, 15% retention, ~250 DAU
+
+| Fonte | Stima/giorno |
+|-------|-------------|
+| Interstitial Ads | €4-5 |
+| Rewarded Ads | €1-2 |
+| Remove Ads IAP | €2-3 |
+| **Totale** | **€7-10/giorno** |
+
+| Periodo | Entrate stimate |
+|---------|----------------|
+| Mese 1 | €100-150 |
+| Mese 3 | €200-300 |
+| Mese 6 | €300-400 |
+
+---
+
+## Classifica Online (Game Center)
+
+### Come funziona per l'utente
+- Login automatico con Apple ID
+- Classifica globale (tutti i giocatori)
+- Classifica amici (rubrica)
+- Record personali
+
+### Implementazione tecnica
+1. Creare Leaderboard su App Store Connect (gratuito)
+2. Aggiungere plugin Game Center in Unity
+3. Inviare punteggio con:
+```csharp
+Social.ReportScore(punteggio, "tua_leaderboard_id", success => {});
+```
+4. UI standard Apple (veloce) o UI custom (più lavoro)
+
+### Testing Game Center
+- **Unity Editor** → non funziona
+- **Build su telefono** → funziona con account Sandbox
+- **TestFlight** → funziona con account Sandbox, simula produzione
+
+### Account Sandbox
+- Apple ID finto creato su App Store Connect (gratuito, 2 minuti)
+- Su iPhone: `Impostazioni` → `Game Center` → logout account reale → login sandbox
+- NON tocca Apple ID, iCloud o App Store
+- Punteggi e acquisti vanno in ambiente separato di test
+- Quando finisci i test, rimetti il tuo account reale
+
+---
+
+## Distribuzione Geografica
+
+### Mercati target
+- 🇺🇸 USA
+- 🇬🇧 UK
+- 🇩🇪 Germania
+- 🇯🇵 Giappone (ottimo per giochi casual)
+
+### Cina
+- Richiede licenza governativa ISBN
+- Necessaria società cinese registrata
+- Tempi: 6-18 mesi, costi elevati
+- **Da valutare solo dopo il successo nel mercato occidentale**
+
+---
+
+## Strategia di Crescita (Organica)
+
+### App Store Optimization (ASO) ← priorità massima
+- Titolo con keywords rilevanti
+- Descrizione ottimizzata
+- Screenshot accattivanti
+- Icona che cattura l'occhio
+- Mirare alle prime recensioni (chiedere ad amici/parenti)
+
+### Canali gratuiti
+- **Reddit** → r/indiegaming, r/gamedev, r/iosgaming
+- **Product Hunt** → lancio come "prodotto del giorno"
+- **TikTok** → video gameplay (no volto necessario, alto potenziale virale)
+
+### Proiezione download organici
+| Periodo | Download/giorno |
+|---------|----------------|
+| Lancio (mese 1) | 5-20 |
+| Con buon ASO (mese 2-3) | 20-50 |
+| Spike Reddit/ProductHunt | 50-100 |
+| Regime organico | 20-40 |

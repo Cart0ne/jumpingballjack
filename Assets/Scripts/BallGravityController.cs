@@ -11,12 +11,14 @@ public class BallGravityController : MonoBehaviour
     private Rigidbody rb;
     private bool isOnPlatform = false;
     private DifficultyManager difficultyManager;
+    private BallController ballController;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.useGravity = false;
         difficultyManager = FindFirstObjectByType<DifficultyManager>();
+        ballController = GetComponent<BallController>();
     }
 
     void FixedUpdate()
@@ -43,7 +45,13 @@ public class BallGravityController : MonoBehaviour
             targetGravityScale = offPlatformGravityScale;
         }
 
-        rb.AddForce(Physics.gravity * targetGravityScale, ForceMode.Acceleration);
+        // Scala la gravita per flightSpeedMultiplier^2 durante il volo per mantenere la stessa traiettoria
+        float gravityMultiplier = targetGravityScale;
+        if (!isOnPlatform && ballController != null && ballController.flightSpeedMultiplier > 1f)
+        {
+            gravityMultiplier *= ballController.flightSpeedMultiplier * ballController.flightSpeedMultiplier;
+        }
+        rb.AddForce(Physics.gravity * gravityMultiplier, ForceMode.Acceleration);
     }
 
     void OnCollisionEnter(Collision collision)

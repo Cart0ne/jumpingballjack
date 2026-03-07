@@ -15,6 +15,11 @@ public class BallController : MonoBehaviour
     [Tooltip("Altezza massima raggiungibile dal salto")]
     public float maxJumpHeight = 3f; // Imposta un valore predefinito a tuo piacimento
 
+    [Header("Flight Speed")]
+    [Tooltip("Moltiplicatore velocita in volo (aggiornato dal DifficultyManager se presente). >1 = piu veloce, stessa traiettoria.")]
+    public float flightSpeedMultiplier = 1f;
+    private bool flightSpeedFromDifficulty = false;
+
     [Header("Platform Target")]
     public Transform targetPlatform;
     private PlatformSpawner spawner; // Riferimento al PlatformSpawner
@@ -372,6 +377,16 @@ public class BallController : MonoBehaviour
 
         try
         {
+            // Aggiorna flightSpeedMultiplier dal DifficultyManager
+            if (difficultyManager != null)
+            {
+                float t = difficultyManager.GetNormalizedDifficulty();
+                flightSpeedMultiplier = Mathf.Lerp(
+                    difficultyManager.initialFlightSpeedMultiplier,
+                    difficultyManager.ultimateFlightSpeedMultiplier,
+                    t);
+            }
+
             // Normalizza il tempo di carica
             float chargeTimeNormalized = Mathf.Pow(Mathf.InverseLerp(minChargeTime, maxChargeTime, chargeTime), 1.5f);
 
@@ -390,13 +405,14 @@ public class BallController : MonoBehaviour
             float maxVerticalVelocity = Mathf.Sqrt(2 * Mathf.Abs(Physics.gravity.y) * maxJumpHeight);
             float verticalVelocity = Mathf.Lerp(maxVerticalVelocity * 0.7f, maxVerticalVelocity, chargeTimeNormalized);
 
-            // Applica un fattore di moltiplicazione alla velocità per maggiore energia
-            float speedMultiplier = 1.2f; // Puoi regolare questo valore
-            rb.linearVelocity = new Vector3(horizontalVelocity.x * speedMultiplier, verticalVelocity * speedMultiplier, horizontalVelocity.z * speedMultiplier);
+            // Applica il moltiplicatore di velocita (flightSpeedMultiplier scala la velocita,
+            // BallGravityController scala la gravita di flightSpeedMultiplier^2 per mantenere la stessa traiettoria)
+            float totalMultiplier = 1.2f * flightSpeedMultiplier;
+            rb.linearVelocity = new Vector3(horizontalVelocity.x * totalMultiplier, verticalVelocity * totalMultiplier, horizontalVelocity.z * totalMultiplier);
 
-            // Tempo di volo stimato
+            // Tempo di volo stimato (ridotto proporzionalmente alla velocita)
             estimatedFlightTime = (2 * verticalVelocity) / Mathf.Abs(Physics.gravity.y);
-            estimatedFlightTime = Mathf.Max(estimatedFlightTime * 0.8f, 0.5f); // Riduci leggermente il tempo per un salto più rapido
+            estimatedFlightTime = Mathf.Max((estimatedFlightTime * 0.8f) / flightSpeedMultiplier, 0.5f);
 
             timeSinceJumpStart = 0f;
             jumpStartScale = ballVisual.localScale.x;
@@ -441,6 +457,21 @@ public class BallController : MonoBehaviour
 
         if (collision.gameObject.CompareTag("InitialPlatform") || collision.gameObject.CompareTag("Platform") || collision.gameObject.CompareTag("Planet"))
         {
+            // Controlla se l'atterraggio e su una superficie orizzontale
+            bool isHorizontalLanding = false;
+            foreach (ContactPoint contact in collision.contacts)
+            {
+                float angle = Vector3.Angle(contact.normal, Vector3.up);
+                if (angle <= 45f)
+                {
+                    isHorizontalLanding = true;
+                    break;
+                }
+            }
+
+            // Se non e un atterraggio orizzontale (spigolo/lato), lascia che la fisica gestisca
+            if (!isHorizontalLanding) return;
+
             if (animationPlayer != null)
                 animationPlayer.PlayLandAnimation();
             else
@@ -449,7 +480,6 @@ public class BallController : MonoBehaviour
 #endif
                 StartCoroutine(LandAnimationCooldown());
 
-            //isGrounded = true;
             rb.linearVelocity = Vector3.zero;
 
             // Se siamo in atterraggio post-bounce, riproduci il suono modificato
@@ -463,10 +493,8 @@ public class BallController : MonoBehaviour
                 audioSource.PlayOneShot(bounceSound, bounceSoundVolume);
             }
 
-            // Se la piattaforma è valida e il bounce non è già stato applicato, avvia il ritardo prima di rimbalzare
-
-            if ((collision.gameObject.CompareTag("InitialPlatform") || collision.gameObject.CompareTag("Platform") || collision.gameObject.CompareTag("Planet")) && !hasBounced && ballIsActive)
-
+            // Bounce solo su atterraggio orizzontale
+            if (!hasBounced && ballIsActive)
             {
                 // Blocca temporaneamente il movimento su X e Z
                 rb.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotation;

@@ -73,7 +73,7 @@ public class StartGameActions : MonoBehaviour
             {
                 startCanvasGroup = startCanvas.AddComponent<CanvasGroup>();
             }
-            startCanvasGroup.alpha = 1f;
+            startCanvasGroup.alpha = 0f;
             startCanvas.SetActive(true);
         }
 

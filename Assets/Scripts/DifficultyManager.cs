@@ -73,6 +73,12 @@ public class DifficultyManager : MonoBehaviour
     public float ultimateCorrectionKd = 2.5f; // Esempio: Kd potrebbe diminuire con la difficoltà
 
 
+    [Header("Flight Speed Settings")]
+    [Tooltip("Moltiplicatore velocita palla in volo a difficolta 0")]
+    public float initialFlightSpeedMultiplier = 1f;
+    [Tooltip("Moltiplicatore velocita palla in volo alla massima difficolta")]
+    public float ultimateFlightSpeedMultiplier = 1.5f;
+
     [Header("Platform Vertical Movement Settings")]
     [Tooltip("Probabilità (da 0 a 1) che una piattaforma si muova verticalmente")]
     [Range(0f, 1f)]
