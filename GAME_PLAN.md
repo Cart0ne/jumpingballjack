@@ -386,3 +386,46 @@ Social.ReportScore(punteggio, "tua_leaderboard_id", success => {});
 - Raddoppia il mercato potenziale
 - Utenti iPad spendono mediamente di più in IAP
 - Lavoro minimo rispetto al beneficio
+
+---
+
+## Crediti Asset
+
+> **NOTA**: Lista parziale e da verificare. Alcuni asset potrebbero essere stati modificati pesantemente o usati solo come base. Verificare le licenze specifiche sullo Unity Asset Store prima della pubblicazione. Controllare anche la cartella Assets per asset non elencati qui.
+
+| Autore | Asset | Licenza | Note |
+|--------|-------|---------|------|
+| Synty Studios | Effetto esplosione palla | Da verificare | Potrebbe essere stato modificato |
+| Matthew Gus | Effetto inflation palla | Da verificare | Potrebbe essere stato modificato |
+| Heathe Engineering | Icone | Da verificare | Potrebbe essere stato modificato |
+| Dogmatic | Skybox | Da verificare | Potrebbe essere stato modificato |
+
+---
+
+## Riferimenti Grafici
+
+- **Giallo UI**: RGB (255, 245, 100)
+- **Azzurro UI**: RGB (50, 200, 255)
+
+---
+
+## TODO Aggiuntivi
+
+### Settings & Legale
+- [ ] **Privacy Policy / Disclaimer** — Obbligatorio per App Store. Pagina web esterna linkata nelle impostazioni
+- [ ] **Donate** — Pulsante nelle impostazioni (link PayPal o tip jar)
+
+### Gameplay Futuro
+- [ ] **Piattaforme che scompaiono** — Piattaforme che spariscono dopo un certo tempo o quando il giocatore ci salta sopra, aggiungono difficoltà
+
+### Social (Beta 2)
+- [ ] Classifica amici (Game Center)
+- [ ] Posta sui social (condividi punteggio)
+- [ ] Invita un amico
+
+### Risorse Asset Gratuite
+- Kenney.nl — sprite, tileset, modelli 3D, interfacce
+- OpenGameArt.org — asset grafici, sprite, texture, suoni
+- Unity Asset Store (sezione gratuita)
+- Itch.io — pacchetti asset indie gratuiti
+- Game-icons.net — icone vettoriali per UI

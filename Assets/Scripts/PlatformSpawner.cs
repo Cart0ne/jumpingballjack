@@ -154,6 +154,14 @@ public class PlatformSpawner : MonoBehaviour
 
         GameObject selectedPrefab = SelectPrefabUsingShuffleBag(allValidPrefabs);
 
+        if (selectedPrefab != null)
+        {
+            if (selectedPrefab.CompareTag(PLANET_TAG))
+                lastSpawnedPlanetPrefab = selectedPrefab;
+            else if (selectedPrefab.CompareTag(PLATFORM_TAG))
+                lastSpawnedPlatformPrefab = selectedPrefab;
+        }
+
         if (selectedPrefab == null)
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -256,9 +264,22 @@ public class PlatformSpawner : MonoBehaviour
 
             if (forcePlatform && availablePlatformPrefabsForCycle.Count > 0)
             {
-                int indexToPick = availablePlatformPrefabsForCycle.Count - 1;
-                selectedPrefab = availablePlatformPrefabsForCycle[indexToPick];
-                availablePlatformPrefabsForCycle.RemoveAt(indexToPick);
+                for (int i = availablePlatformPrefabsForCycle.Count - 1; i >= 0; i--)
+                {
+                    if (availablePlatformPrefabsForCycle[i] != lastSpawnedPlatformPrefab)
+                    {
+                        selectedPrefab = availablePlatformPrefabsForCycle[i];
+                        availablePlatformPrefabsForCycle.RemoveAt(i);
+                        break;
+                    }
+                }
+
+                if (selectedPrefab == null)
+                {
+                    int fallbackIndex = availablePlatformPrefabsForCycle.Count - 1;
+                    selectedPrefab = availablePlatformPrefabsForCycle[fallbackIndex];
+                    availablePlatformPrefabsForCycle.RemoveAt(fallbackIndex);
+                }
             }
         }
 

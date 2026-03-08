@@ -242,6 +242,18 @@ public class GameOverManager : MonoBehaviour
 #endif
         }
 
+        if (AdManager.Instance != null)
+        {
+            AdManager.Instance.ShowInterstitialThenExecute(ExecuteRestart);
+        }
+        else
+        {
+            ExecuteRestart();
+        }
+    }
+
+    private void ExecuteRestart()
+    {
         if (difficultyManager != null)
         {
             difficultyManager.ResetDifficulty();
@@ -258,6 +270,18 @@ public class GameOverManager : MonoBehaviour
     }
 
     public void GoBackToStart()
+    {
+        if (AdManager.Instance != null)
+        {
+            AdManager.Instance.ShowInterstitialThenExecute(ExecuteGoBackToStart);
+        }
+        else
+        {
+            ExecuteGoBackToStart();
+        }
+    }
+
+    private void ExecuteGoBackToStart()
     {
         StartGameActions.skipStartScreen = false;
 
