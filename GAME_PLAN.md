@@ -210,7 +210,7 @@ GameScene
 ## Suggerimenti Gameplay
 
 - [x] **Feedback aptico (Haptics)** — IMPLEMENTATO. Plugin nativo iOS (`HapticFeedback.mm`) + wrapper C# (`HapticFeedback.cs`). Light al landing (BallController), Medium al centro perfetto (BallScoreTracker), Heavy al game over (GameOverManager). Rispetta `SoundManager.soundEnabled`. Non fa nulla nell'editor, solo su iPhone.
-- [ ] **Trail/particelle in volo** — Aggiungere Trail Renderer sulla palla in Unity Inspector (nessun codice necessario). Regolare Time, Width, materiale. Se serve comportamento dinamico (colore/lunghezza legati a velocità/difficoltà), aggiungere codice.
+- [x] **Trail/particelle in volo** — AGGIUNTO. Trail Renderer configurato sulla palla in Unity Inspector. Se serve comportamento dinamico (colore/lunghezza legati a velocità/difficoltà), aggiungere codice.
 - [ ] **Difficulty curve non lineare** — `useCurve` e `difficultyCurve` esistono già nel DifficultyManager. Basta attivare `useCurve` nell'Inspector e disegnare una curva ease-out. Nessun codice necessario.
 - [ ] **Combo/streak visivo (miglioramenti)** — Il sistema base esiste già: ring effect al centro, ring colorato al 5° centro consecutivo Planet con x3 punti. Miglioramenti possibili: screen shake al x3, testo floating più grande/colorato per il moltiplicatore, suono speciale per il x3.
 

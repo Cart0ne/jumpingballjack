@@ -105,7 +105,7 @@ public class GameOverManager : MonoBehaviour
 #endif
             }
 
-            HapticFeedback.TriggerHeavy();
+            // HapticFeedback.TriggerHeavy(); // TODO: riattivare quando risolto crash IL2CPP
 
             StartCoroutine(HandleGameOverSequence());
         }

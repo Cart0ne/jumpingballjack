@@ -493,7 +493,7 @@ public class BallController : MonoBehaviour
                 audioSource.PlayOneShot(bounceSound, bounceSoundVolume);
             }
 
-            HapticFeedback.TriggerLight();
+            // HapticFeedback.TriggerLight(); // TODO: riattivare quando risolto crash IL2CPP
 
             // Bounce solo su atterraggio orizzontale
             if (!hasBounced && ballIsActive)
