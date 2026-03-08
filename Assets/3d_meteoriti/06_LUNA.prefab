@@ -133,7 +133,7 @@ MonoBehaviour:
   visualTransform: {fileID: 2013817391893004641}
   maxCompressionFactor: 0.7
   compressionSpeed: 100
-  upwardJerkStrength: 0.6
+  upwardJerkStrength: 0
   bounceDuration: 0.3
   bounceActivationDelay: 1
   decompressionBounceDelay: 0.1
@@ -212,6 +212,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -233,7 +235,9 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}

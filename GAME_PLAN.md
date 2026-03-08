@@ -143,6 +143,9 @@ GameScene
 - [x] **Bug mute non persistente** — RISOLTO. Suoni riapparivano dopo restart partita perche `UpdateEffectsSound` non copriva AudioSource creati dopo il reload scena. Rimosso approccio mute globale, ogni script ora controlla il flag statico.
 - [x] **Warning "Setting scale failed"** — RISOLTO. `PlatformExitAnimation` scalava a `Vector3.zero` → cambiato a `Vector3.one * 0.001f`
 - [x] **Bounce innaturale su spigoli/lati** — RISOLTO. `OnCollisionEnter` in BallController ora controlla la normale di collisione (angolo < 45°). Impatti laterali vengono gestiti dalla fisica naturale senza freeze/bounce forzato.
+- [x] **Collisioni multiple su superfici irregolari** — RISOLTO. Aggiunto cooldown di 0.15s (`canPlayLandAnimation` + `LandAnimationCooldown`) per evitare animazioni/suoni doppi da sassi e decorazioni sulle piattaforme.
+- [x] **Camera return troppo veloce al game over** — RISOLTO. `MoveCameraToStartView` ora fa teleport vicino alla posizione finale + approccio dolce in 1s (configurabile via Inspector: `approachDistance`, `approachDuration`).
+- [x] **Crash iOS da haptic feedback (IL2CPP)** — RISOLTO temporaneamente. Rimossi i file `HapticFeedback.cs` e `HapticFeedback.mm`, commentate le chiamate con TODO. Vedi `HAPTIC_ROLLBACK.md`.
 
 ---
 
@@ -202,16 +205,16 @@ GameScene
 
 - [ ] **BallController è un god object** — ~15 flag booleani di stato (`isGrounded`, `gameStarted`, `gameEnded`, `hasBounced`, `isBouncing`, `isBounceLanding`, `hasExploded`...). Una state machine semplificherebbe e renderebbe il codice meno fragile.
 - [ ] **Accoppiamento stretto** — BallController dipende da 9+ script. Un sistema ad eventi (`OnBallLanded`, `OnGameOver`, `OnJump`) separerebbe le responsabilità.
-- [ ] **Pulizia codice morto** — `#pragma warning disable CS0414` con variabili mai usate in BallController, blocchi `#if UNITY_EDITOR` vuoti ovunque, codice commentato da rimuovere.
-- [ ] **Magic numbers** — `1.2f` moltiplicatore in BallController, `0.33f`/`0.66f` probabilità in PlatformSpawner. Meglio come costanti con nome o campi Inspector.
+- [x] **Pulizia codice morto** — FATTO. Rimossi: variabili mai usate (`flightSpeedFromDifficulty`, `animationTimer`, `jumpStartScale`), `#pragma warning disable CS0414`, 5 blocchi di codice commentato in BallController, 6 blocchi `#if UNITY_EDITOR` vuoti in PlatformCompression, 7 blocchi `#if UNITY_EDITOR` vuoti in GameOverManager. Wrappato `Debug.LogWarning` esposto in build release.
+- [x] **Magic numbers** — FATTO. In BallController: `baseSpeedMultiplier` (1.2), `minVerticalVelocityFactor` (0.7), `chargeCurveExponent` (1.5) come campi Inspector (Jump Tuning); `flightTimeReductionFactor`, `minFlightTime`, `maxLandingAngle`, `bounceEndTimeout`, `prejumpAnimationTarget` come costanti private. In PlatformSpawner: `forwardAfterLateralProbability` (0.5), `forwardProbability` (0.33), `forwardPlusLeftProbability` (0.66) come campi Inspector (Orientation Probabilities).
 
 ---
 
 ## Suggerimenti Gameplay
 
-- [x] **Feedback aptico (Haptics)** — IMPLEMENTATO. Plugin nativo iOS (`HapticFeedback.mm`) + wrapper C# (`HapticFeedback.cs`). Light al landing (BallController), Medium al centro perfetto (BallScoreTracker), Heavy al game over (GameOverManager). Rispetta `SoundManager.soundEnabled`. Non fa nulla nell'editor, solo su iPhone.
+- [ ] **Feedback aptico (Haptics)** — RIMOSSO. Plugin nativo causava crash IL2CPP su iOS (EXC_BAD_ACCESS stack overflow). File .mm e .cs eliminati, chiamate commentate con TODO in BallController, BallScoreTracker, GameOverManager. Opzioni future: Xcode post-build, Nice Vibrations, o investigare iOS 18 + IL2CPP. Vedi `HAPTIC_ROLLBACK.md`.
 - [x] **Trail/particelle in volo** — AGGIUNTO. Trail Renderer configurato sulla palla in Unity Inspector. Se serve comportamento dinamico (colore/lunghezza legati a velocità/difficoltà), aggiungere codice.
-- [ ] **Difficulty curve non lineare** — `useCurve` e `difficultyCurve` esistono già nel DifficultyManager. Basta attivare `useCurve` nell'Inspector e disegnare una curva ease-out. Nessun codice necessario.
+- [x] **Difficulty curve non lineare** — FATTO. Attivato `useCurve` nell'Inspector del DifficultyManager con curva ease-out.
 - [ ] **Combo/streak visivo (miglioramenti)** — Il sistema base esiste già: ring effect al centro, ring colorato al 5° centro consecutivo Planet con x3 punti. Miglioramenti possibili: screen shake al x3, testo floating più grande/colorato per il moltiplicatore, suono speciale per il x3.
 
 ---
@@ -360,3 +363,26 @@ Social.ReportScore(punteggio, "tua_leaderboard_id", success => {});
 | CapCut | Montaggio video TikTok | Gratuito |
 | Claude | Post Reddit, didascalie, hashtag | Già incluso nel tuo piano |
 | ChatGPT | Alternativa per testi | Gratuito |
+
+## Supporto iPad
+
+### Implementazione
+- In Unity Build Settings: cambiare target da **iPhone** a **iPhone + iPad (Universal)**
+- Una sola app per entrambi i dispositivi (Universal App)
+- Nessun costo aggiuntivo sullo Store
+
+### Cosa verificare
+- [ ] Canvas UI — controllare che gli elementi siano posizionati correttamente
+      (iPad ha proporzioni 4:3 vs iPhone 9:19.5)
+- [ ] Bande nere ai lati — eventualmente gestire con sfondo/skybox
+- [ ] Test su simulatore iPad in Xcode (gratuito, no hardware necessario)
+
+### Priorità
+- Gameplay: funziona già ✅
+- UI: piccoli aggiustamenti ai Canvas (stimato 1-2 ore)
+- Test: simulatore Xcode o iPad fisico
+
+### Perché vale la pena
+- Raddoppia il mercato potenziale
+- Utenti iPad spendono mediamente di più in IAP
+- Lavoro minimo rispetto al beneficio

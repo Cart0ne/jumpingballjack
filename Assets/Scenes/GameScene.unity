@@ -2524,6 +2524,8 @@ MonoBehaviour:
   gameOverSoundVolume: 1
   playAgainSound: {fileID: 8300000, guid: f341bfdcaa992488eb9731f8861e9767, type: 3}
   gameOverFadeDuration: 1
+  approachDistance: 15
+  approachDuration: 1
 --- !u!4 &770430324
 Transform:
   m_ObjectHideFlags: 0
@@ -3138,7 +3140,7 @@ MonoBehaviour:
   ultimateCorrectionKp: 2
   initialCorrectionKd: 2
   ultimateCorrectionKd: 1
-  initialFlightSpeedMultiplier: 1.1
+  initialFlightSpeedMultiplier: 1.2
   ultimateFlightSpeedMultiplier: 2.5
   verticalMovementProbability: 0.8
   minVerticalMoveSpeed: 1
@@ -7214,6 +7216,9 @@ MonoBehaviour:
   scaleVariation: 0
   randomYRotationEnabled: 0
   planetPlatformsBeforeForcedPlatform: 10
+  forwardAfterLateralProbability: 0.5
+  forwardProbability: 0.33
+  forwardPlusLeftProbability: 0.66
   spawnedPlatforms: []
 --- !u!4 &2115303197
 Transform:

@@ -34,6 +34,14 @@ public class PlatformSpawner : MonoBehaviour
     [Header("Spawn Logic")]
     public int planetPlatformsBeforeForcedPlatform = 9;
 
+    [Header("Orientation Probabilities")]
+    [Tooltip("Probabilita di andare avanti dopo una laterale (0-1)")]
+    public float forwardAfterLateralProbability = 0.5f;
+    [Tooltip("Soglia probabilita Forward quando nessuna laterale precedente (0-1)")]
+    public float forwardProbability = 0.33f;
+    [Tooltip("Soglia cumulativa Forward+Left quando nessuna laterale precedente (0-1)")]
+    public float forwardPlusLeftProbability = 0.66f;
+
     #endregion
 
     #region Private Constants
@@ -392,13 +400,13 @@ public class PlatformSpawner : MonoBehaviour
         }
         else if (lastLateral.HasValue)
         {
-            proposedOrientation = (UnityEngine.Random.value > 0.5f) ? SpawnOrientation.Forward : ((lastLateral == SpawnOrientation.Left) ? SpawnOrientation.Right : SpawnOrientation.Left);
+            proposedOrientation = (UnityEngine.Random.value > forwardAfterLateralProbability) ? SpawnOrientation.Forward : ((lastLateral == SpawnOrientation.Left) ? SpawnOrientation.Right : SpawnOrientation.Left);
         }
         else
         {
             float rnd = UnityEngine.Random.value;
-            if (rnd < 0.33f) { proposedOrientation = SpawnOrientation.Forward; }
-            else if (rnd < 0.66f) { proposedOrientation = SpawnOrientation.Left; }
+            if (rnd < forwardProbability) { proposedOrientation = SpawnOrientation.Forward; }
+            else if (rnd < forwardPlusLeftProbability) { proposedOrientation = SpawnOrientation.Left; }
             else { proposedOrientation = SpawnOrientation.Right; }
         }
         if (proposedOrientation != SpawnOrientation.Forward)

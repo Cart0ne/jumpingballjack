@@ -289,7 +289,7 @@ MonoBehaviour:
   visualTransform: {fileID: 2640336334317358365}
   maxCompressionFactor: 0.7
   compressionSpeed: 100
-  upwardJerkStrength: 0.6
+  upwardJerkStrength: 0
   bounceDuration: 0.3
   bounceActivationDelay: 1
   decompressionBounceDelay: 0.1

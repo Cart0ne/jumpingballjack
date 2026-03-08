@@ -163,6 +163,10 @@ public class GameOverManager : MonoBehaviour
         yield return StartCoroutine(MoveCameraToStartView());
     }
 
+    [Header("Camera Return Settings")]
+    public float approachDistance = 15f;
+    public float approachDuration = 1f;
+
     private IEnumerator MoveCameraToStartView()
     {
         if (mainCamera == null)
@@ -178,19 +182,23 @@ public class GameOverManager : MonoBehaviour
             SkyboxController.Instance.TransitionToInitialSkybox();
         }
 
-        float moveDuration = cameraMoveSpeed;
+        // Teleport vicino alla posizione finale
+        Vector3 approachDirection = (mainCamera.transform.position - targetPosition).normalized;
+        Vector3 approachStart = targetPosition + approachDirection * approachDistance;
+        mainCamera.transform.position = approachStart;
+
+        // Movimento dolce verso inquadratura finale
         float elapsedTime = 0f;
-        Vector3 initialCamPos = mainCamera.transform.position;
         Quaternion initialCamRot = mainCamera.transform.rotation;
         float initialCamSize = mainCamera.orthographic ? mainCamera.orthographicSize : 0f;
 
-        while (elapsedTime < moveDuration)
+        while (elapsedTime < approachDuration)
         {
             elapsedTime += Time.deltaTime;
-            float t = elapsedTime / moveDuration;
+            float t = elapsedTime / approachDuration;
             float easeVal = 1f - Mathf.Pow(1f - t, 2);
 
-            mainCamera.transform.position = Vector3.Lerp(initialCamPos, targetPosition, easeVal);
+            mainCamera.transform.position = Vector3.Lerp(approachStart, targetPosition, easeVal);
             mainCamera.transform.rotation = Quaternion.Slerp(initialCamRot, targetRotation, easeVal);
             if (mainCamera.orthographic)
                 mainCamera.orthographicSize = Mathf.Lerp(initialCamSize, targetOrthographicSize, easeVal);
@@ -223,10 +231,6 @@ public class GameOverManager : MonoBehaviour
 
     public void RestartGame()
     {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-
-#endif
-
         if (audioSource != null && playAgainSound != null && SoundManager.soundEnabled)
         {
             audioSource.PlayOneShot(playAgainSound);
@@ -241,10 +245,6 @@ public class GameOverManager : MonoBehaviour
         if (difficultyManager != null)
         {
             difficultyManager.ResetDifficulty();
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-
-
-#endif
         }
 
         StartGameActions.skipStartScreen = true;
@@ -252,9 +252,6 @@ public class GameOverManager : MonoBehaviour
         if (SkyboxController.Instance != null)
         {
             SkyboxController.resetSkyboxOnLoad = true;
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-
-#endif
         }
 
         StartCoroutine(FadeGameOverAndRestart());
@@ -262,28 +259,17 @@ public class GameOverManager : MonoBehaviour
 
     public void GoBackToStart()
     {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-
-#endif
-
         StartGameActions.skipStartScreen = false;
 
         if (SkyboxController.Instance != null)
         {
             SkyboxController.resetSkyboxOnLoad = true;
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-
-#endif
         }
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         if (difficultyManager != null)
         {
             difficultyManager.ResetDifficulty();
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-
-
-#endif
         }
     }
 
@@ -309,9 +295,6 @@ public class GameOverManager : MonoBehaviour
 
         if (SkyboxController.Instance != null)
         {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-
-#endif
             Destroy(SkyboxController.Instance.gameObject);
         }
 

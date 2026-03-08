@@ -41,6 +41,7 @@ ExportedObj/
 *.csproj
 *.unityproj
 *.sln
+*.slnx
 *.suo
 *.tmp
 *.user
@@ -106,6 +107,9 @@ InitTestScene*.unity*
 
 # Backup folder
 /_BACKUP/
+
+# Unity recovery files
+/[Aa]ssets/_Recovery/
 
 # UIElementsSchema
 /UIElementsSchema/

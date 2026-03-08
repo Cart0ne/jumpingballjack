@@ -105,9 +105,6 @@ public class PlatformCompression : MonoBehaviour
             {
                 platformOriginalPosition = transform.position;
                 originalPositionSet = true;
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-
-#endif
             }
         }
     }
@@ -119,9 +116,6 @@ public class PlatformCompression : MonoBehaviour
             isPlayerOnThisPlatform = false;
             if (canBounce && !isBouncing)
             {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-
-#endif
                 StartCoroutine(DecompressionBounceDelay()); // Avvia il ritardo dopo la decompressione
             }
         }
@@ -130,10 +124,7 @@ public class PlatformCompression : MonoBehaviour
     private IEnumerator EnableBounce()
     {
         yield return new WaitForSeconds(bounceActivationDelay);
-        canBounce = true; // Abilita il rimbalzo dopo un breve ritardo
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-
-#endif
+        canBounce = true;
     }
 
     private IEnumerator DecompressionBounceDelay()
@@ -141,9 +132,6 @@ public class PlatformCompression : MonoBehaviour
         // Attendi un breve periodo per assicurarsi che la piattaforma sia decompressa
         yield return new WaitUntil(() => !isDecompressing);
         yield return new WaitForSeconds(decompressionBounceDelay);
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-
-#endif
         StartCoroutine(BounceUp());
     }
 
@@ -153,9 +141,6 @@ public class PlatformCompression : MonoBehaviour
         float timeElapsed = 0f;
         Vector3 startPosition = transform.position;
         Vector3 targetPosition = startPosition + Vector3.up * upwardJerkStrength;
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-
-#endif
 
         while (timeElapsed < bounceDuration / 2f)
         {
@@ -172,10 +157,7 @@ public class PlatformCompression : MonoBehaviour
             yield return null;
         }
 
-        transform.position = platformOriginalPosition; // Assicura che la posizione finale sia quella originale
+        transform.position = platformOriginalPosition;
         isBouncing = false;
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-
-#endif
     }
 }

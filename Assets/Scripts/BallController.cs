@@ -13,12 +13,26 @@ public class BallController : MonoBehaviour
 
     [Header("Vertical Jump Control")]
     [Tooltip("Altezza massima raggiungibile dal salto")]
-    public float maxJumpHeight = 3f; // Imposta un valore predefinito a tuo piacimento
+    public float maxJumpHeight = 3f;
+
+    [Header("Jump Tuning")]
+    [Tooltip("Moltiplicatore base applicato alla velocita del salto")]
+    public float baseSpeedMultiplier = 1.2f;
+    [Tooltip("Fattore minimo di velocita verticale con carica minima (0-1)")]
+    public float minVerticalVelocityFactor = 0.7f;
+    [Tooltip("Esponente della curva di carica (>1 = risposta piu lenta all'inizio)")]
+    public float chargeCurveExponent = 1.5f;
+
+    // Costanti interne per il calcolo del tempo di volo
+    private const float flightTimeReductionFactor = 0.8f;
+    private const float minFlightTime = 0.5f;
+    private const float maxLandingAngle = 45f;
+    private const float bounceEndTimeout = 1f;
+    private const float prejumpAnimationTarget = 0.25f;
 
     [Header("Flight Speed")]
     [Tooltip("Moltiplicatore velocita in volo (aggiornato dal DifficultyManager se presente). >1 = piu veloce, stessa traiettoria.")]
     public float flightSpeedMultiplier = 1f;
-    private bool flightSpeedFromDifficulty = false;
 
     [Header("Platform Target")]
     public Transform targetPlatform;
@@ -35,20 +49,14 @@ public class BallController : MonoBehaviour
 
     [Header("Animation Settings")]
     private CollisionAnimationPlayer animationPlayer;
-    //private bool isCharging = false;
-    //private float chargeTimer = 0f;
     private const float pauseTime = 0.1f;
     private Animator ballAnimator;
     private float currentChargeTime;
-#pragma warning disable CS0414
-    private float animationTimer;
-#pragma warning disable CS0414
     private bool isChargingAnimation;
     private bool hasPausedAnimation;
     private bool canPlayLandAnimation = true; // Flag per controllare se l'animazione può partire
-    private float landAnimationCooldown = 1f; // Durata minima (secondi) tra due animazioni 'land'
+    private float landAnimationCooldown = 0.15f; // Durata minima (secondi) tra due collisioni di atterraggio
 
-    //[Header("Inflation/Deflation Settings")]
     public Transform ballVisual;
 
     [Header("Explosion & Game Over Settings")]
@@ -68,7 +76,6 @@ public class BallController : MonoBehaviour
     public bool gameEnded = false;
     private float timeSinceJumpStart = 0f;
     private float estimatedFlightTime = 1f;
-    private float jumpStartScale = 1f;
     // Flag per evitare di generare ripetutamente la nuova piattaforma nella stessa collisione.
     private bool hasGeneratedNextPlatform = false;
 
@@ -167,17 +174,7 @@ public class BallController : MonoBehaviour
         if (gameStarted && !firstCollisionDetected)
         {
             firstCollisionDetected = true;
-
-            /*if (ballRotationController != null)
-            {
-                // Attiva lo script BallRotationController
-                ballRotationController.enabled = true;
-
-                // Se vuoi, chiama anche un metodo per iniziare la rotazione
-                ballRotationController.EnableRotation();
-            }*/
         }
-
     }
 
     void CheckForExplosion()
@@ -358,18 +355,17 @@ public class BallController : MonoBehaviour
                     Debug.LogError("PerformJump: Nessuna piattaforma trovata, eseguo un salto generico");
 #endif
                 // Applica un salto generico in avanti
-                float chargeTimeNormalized = Mathf.Pow(Mathf.InverseLerp(minChargeTime, maxChargeTime, chargeTime), 1.5f);
+                float chargeTimeNormalized = Mathf.Pow(Mathf.InverseLerp(minChargeTime, maxChargeTime, chargeTime), chargeCurveExponent);
                 float verticalVelocity = Mathf.Sqrt(2 * Mathf.Abs(Physics.gravity.y) * maxJumpHeight);
-                verticalVelocity = Mathf.Lerp(verticalVelocity * 0.7f, verticalVelocity, chargeTimeNormalized);
+                verticalVelocity = Mathf.Lerp(verticalVelocity * minVerticalVelocityFactor, verticalVelocity, chargeTimeNormalized);
 
                 // Salta in una direzione fissa (ad esempio avanti)
                 rb.linearVelocity = new Vector3(0f, verticalVelocity, Mathf.Lerp(minJumpDistance, maxJumpDistance, chargeTimeNormalized));
 
                 // Imposta i valori necessari per la funzione
                 estimatedFlightTime = (2 * verticalVelocity) / Mathf.Abs(Physics.gravity.y);
-                estimatedFlightTime = Mathf.Max(estimatedFlightTime * 0.8f, 0.5f);
+                estimatedFlightTime = Mathf.Max(estimatedFlightTime * flightTimeReductionFactor, minFlightTime);
                 timeSinceJumpStart = 0f;
-                //jumpStartScale = ballVisual.localScale.x;
 
                 return;
             }
@@ -388,7 +384,7 @@ public class BallController : MonoBehaviour
             }
 
             // Normalizza il tempo di carica
-            float chargeTimeNormalized = Mathf.Pow(Mathf.InverseLerp(minChargeTime, maxChargeTime, chargeTime), 1.5f);
+            float chargeTimeNormalized = Mathf.Pow(Mathf.InverseLerp(minChargeTime, maxChargeTime, chargeTime), chargeCurveExponent);
 
             // Calcolo della distanza orizzontale verso la piattaforma
             float horizontalDistance = Mathf.Lerp(minJumpDistance, maxJumpDistance, chargeTimeNormalized);
@@ -398,24 +394,23 @@ public class BallController : MonoBehaviour
             directionHorizontal.y = 0; // Movimento orizzontale
 
             // Incrementa la velocità orizzontale
-            float horizontalSpeed = horizontalDistance / 1.2f; // Riduci il divisore per maggiore velocità
+            float horizontalSpeed = horizontalDistance / baseSpeedMultiplier;
             Vector3 horizontalVelocity = directionHorizontal * horizontalSpeed;
 
             // Incrementa la velocità verticale
             float maxVerticalVelocity = Mathf.Sqrt(2 * Mathf.Abs(Physics.gravity.y) * maxJumpHeight);
-            float verticalVelocity = Mathf.Lerp(maxVerticalVelocity * 0.7f, maxVerticalVelocity, chargeTimeNormalized);
+            float verticalVelocity = Mathf.Lerp(maxVerticalVelocity * minVerticalVelocityFactor, maxVerticalVelocity, chargeTimeNormalized);
 
             // Applica il moltiplicatore di velocita (flightSpeedMultiplier scala la velocita,
             // BallGravityController scala la gravita di flightSpeedMultiplier^2 per mantenere la stessa traiettoria)
-            float totalMultiplier = 1.2f * flightSpeedMultiplier;
+            float totalMultiplier = baseSpeedMultiplier * flightSpeedMultiplier;
             rb.linearVelocity = new Vector3(horizontalVelocity.x * totalMultiplier, verticalVelocity * totalMultiplier, horizontalVelocity.z * totalMultiplier);
 
             // Tempo di volo stimato (ridotto proporzionalmente alla velocita)
             estimatedFlightTime = (2 * verticalVelocity) / Mathf.Abs(Physics.gravity.y);
-            estimatedFlightTime = Mathf.Max((estimatedFlightTime * 0.8f) / flightSpeedMultiplier, 0.5f);
+            estimatedFlightTime = Mathf.Max((estimatedFlightTime * flightTimeReductionFactor) / flightSpeedMultiplier, minFlightTime);
 
             timeSinceJumpStart = 0f;
-            jumpStartScale = ballVisual.localScale.x;
 
             // Magnetismo verso la piattaforma - verifico che il componente e la piattaforma esistano
             BallMagnetism ballMagnetism = GetComponent<BallMagnetism>();
@@ -431,24 +426,18 @@ public class BallController : MonoBehaviour
 #endif
 
             // Implementa un fallback per evitare che il gioco si blocchi
-            float chargeTimeNormalized = Mathf.Pow(Mathf.InverseLerp(minChargeTime, maxChargeTime, chargeTime), 1.5f);
+            float chargeTimeNormalized = Mathf.Pow(Mathf.InverseLerp(minChargeTime, maxChargeTime, chargeTime), chargeCurveExponent);
             float verticalVelocity = Mathf.Sqrt(2 * Mathf.Abs(Physics.gravity.y) * maxJumpHeight);
-            verticalVelocity = Mathf.Lerp(verticalVelocity * 0.7f, verticalVelocity, chargeTimeNormalized);
+            verticalVelocity = Mathf.Lerp(verticalVelocity * minVerticalVelocityFactor, verticalVelocity, chargeTimeNormalized);
 
             // Applica un salto generico in avanti
             rb.linearVelocity = new Vector3(0f, verticalVelocity, Mathf.Lerp(minJumpDistance, maxJumpDistance, chargeTimeNormalized));
 
             // Imposta i valori necessari per la funzione
             estimatedFlightTime = (2 * verticalVelocity) / Mathf.Abs(Physics.gravity.y);
-            estimatedFlightTime = Mathf.Max(estimatedFlightTime * 0.8f, 0.5f);
+            estimatedFlightTime = Mathf.Max(estimatedFlightTime * flightTimeReductionFactor, minFlightTime);
             timeSinceJumpStart = 0f;
-            //jumpStartScale = ballVisual.localScale.x;
         }
-        /*BallRotationController rotController = GetComponent<BallRotationController>();
-        if (rotController != null)
-        {
-            rotController.EnableRotation();
-        }*/
     }
 
     void OnCollisionEnter(Collision collision)
@@ -462,7 +451,7 @@ public class BallController : MonoBehaviour
             foreach (ContactPoint contact in collision.contacts)
             {
                 float angle = Vector3.Angle(contact.normal, Vector3.up);
-                if (angle <= 45f)
+                if (angle <= maxLandingAngle)
                 {
                     isHorizontalLanding = true;
                     break;
@@ -472,13 +461,17 @@ public class BallController : MonoBehaviour
             // Se non e un atterraggio orizzontale (spigolo/lato), lascia che la fisica gestisca
             if (!isHorizontalLanding) return;
 
+            // Ignora collisioni multiple ravvicinate (sassi, irregolarità superficie)
+            if (!canPlayLandAnimation) return;
+            canPlayLandAnimation = false;
+            StartCoroutine(LandAnimationCooldown());
+
             if (animationPlayer != null)
                 animationPlayer.PlayLandAnimation();
-            else
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                    Debug.LogWarning("[BallController] animationPlayer è NULL, non posso riprodurre animazione!");
+            else
+                Debug.LogWarning("[BallController] animationPlayer è NULL, non posso riprodurre animazione!");
 #endif
-                StartCoroutine(LandAnimationCooldown());
 
             rb.linearVelocity = Vector3.zero;
 
@@ -526,8 +519,10 @@ public class BallController : MonoBehaviour
                     }
                     if (ballRotationController != null)
                         ballRotationController.ForceAlignment(ballRotationController.alignmentDuration);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
                     else
                         Debug.LogWarning("[BallController] ballRotationController è NULL in OnCollisionEnter");
+#endif
                 }
 
                 if ((collision.gameObject.CompareTag("Platform") || collision.gameObject.CompareTag("Planet")) && !collision.gameObject.CompareTag("InitialPlatform"))
@@ -573,25 +568,14 @@ public class BallController : MonoBehaviour
 
     IEnumerator EndBounce()
     {
-        yield return new WaitForSeconds(1f);
-        // Se la palla non ha atterrato entro questo tempo, resettiamo comunque il flag.
+        yield return new WaitForSeconds(bounceEndTimeout);
         isBouncing = false;
-        // Resettiamo il tempo di carica alla fine del bounce
 
-        /* 
-              if (isGrounded) // Assicuriamoci che sia ancora a terra dopo il (potenziale) ritardo
-               {
-                   chargeTime = 0f;
-                   //ballVisual.localScale = Vector3.one; // Resettiamo anche la scala visiva per sicurezza
-               }
-       */
         if (!gameEnded)
         {
             isBouncing = false;
             isGrounded = true;
             chargeTime = 0f;
-            //ballVisual.localScale = Vector3.one;
-            // Sblocca i vincoli sulla posizione
             rb.constraints = RigidbodyConstraints.None;
         }
     }
@@ -605,11 +589,11 @@ public class BallController : MonoBehaviour
         {
             ballAnimator.Play("Ball_prejump", 0, 0f);
             currentChargeTime = 0f;
-            animationTimer = 0f;
+
             isChargingAnimation = true;
             hasPausedAnimation = false;
 
-            float targetAnimationTime = 0.25f;
+            float targetAnimationTime = prejumpAnimationTarget;
             float halfChargeTime = maxChargeTime / 2f;
             ballAnimator.speed = targetAnimationTime / halfChargeTime;
         }
@@ -619,11 +603,11 @@ public class BallController : MonoBehaviour
         {
             ballAnimator.Play("Ball_prejump", 0, 0f);
             currentChargeTime = 0f;
-            animationTimer = 0f;
+
             isChargingAnimation = true;
             hasPausedAnimation = false;
 
-            float targetAnimationTime = 0.25f;
+            float targetAnimationTime = prejumpAnimationTarget;
             float halfChargeTime = maxChargeTime / 2f;
             ballAnimator.speed = targetAnimationTime / halfChargeTime;
         }
@@ -667,12 +651,6 @@ public class BallController : MonoBehaviour
         {
             targetPlatform = initPlat.transform;
         }
-
-        // Resetta la scala visiva
-        //if (ballVisual != null)
-        //{
-        //    ballVisual.localScale = Vector3.one;
-        //}
 
         // Assicurati che tutti i renderer e collider siano attivi
         foreach (Renderer r in GetComponentsInChildren<Renderer>())
